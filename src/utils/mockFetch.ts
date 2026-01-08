@@ -1,7 +1,7 @@
-type MockData = { id: number; name: string }[];
+import { MockData } from "../types";
 
 const mockFetch = (category: string, query: string): Promise<MockData> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const delay = Math.random() * 2000 + 200;
 
     setTimeout(() => {

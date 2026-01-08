@@ -1,0 +1,1 @@
+export type MockData = { id: number; name: string }[];
