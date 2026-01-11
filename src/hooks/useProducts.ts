@@ -8,26 +8,27 @@ const useProducts = (category: string, query: string) => {
   const [error, setError] = useState<null | unknown>(null);
 
   useEffect(() => {
-    let isCurrent = true;
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const getData = async () => {
       setLoading(true);
 
       try {
-        const data = await mockFetch(category, query);
+        const data = await mockFetch(category, query, signal);
 
         if (!data) {
           throw new Error("Products do not exist");
         }
 
-        if (isCurrent) {
-          setProducts(data);
-          setError(null);
+        setProducts(data);
+        setError(null);
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          setError(err);
         }
-      } catch (err) {
-        setError(err);
-        setProducts([]);
       } finally {
-        if (isCurrent) {
+        if (!signal.aborted) {
           setLoading(false);
         }
       }
@@ -36,7 +37,7 @@ const useProducts = (category: string, query: string) => {
     getData();
 
     return () => {
-      isCurrent = false;
+      controller.abort("New key pressed");
     };
   }, [category, query]);
 
