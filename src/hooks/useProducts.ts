@@ -6,35 +6,37 @@ const useProducts = (category: string, query: string) => {
   const [products, setProducts] = useState<MockData>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<null | unknown>(null);
-  const [timeoutId, setTimeoutId] = useState<undefined | number>(undefined);
 
   useEffect(() => {
+    let isCurrent = true;
     const getData = async () => {
       setLoading(true);
 
       try {
-        const resolved = await mockFetch(category, query);
+        const data = await mockFetch(category, query);
 
-        if (!resolved) {
+        if (!data) {
           throw new Error("Products do not exist");
         }
 
-        const { data, timerId } = resolved;
-
-        setProducts(data);
-        setTimeoutId(timerId);
+        if (isCurrent) {
+          setProducts(data);
+          setError(null);
+        }
       } catch (err) {
         setError(err);
         setProducts([]);
+      } finally {
+        if (isCurrent) {
+          setLoading(false);
+        }
       }
-
-      setLoading(false);
     };
 
     getData();
 
     return () => {
-      clearTimeout(timeoutId);
+      isCurrent = false;
     };
   }, [category, query]);
 
